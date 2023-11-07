@@ -1,0 +1,15 @@
+{
+    "name": "SoundTouch control",
+    "short_name": "SoundTouch 2",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#fff",
+    "description": "Snellere en mooiere versie van de Soundtouch app",
+    "icons": [
+        {
+            "src": "soundtouch.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

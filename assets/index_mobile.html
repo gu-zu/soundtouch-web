@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!--mobile html-->
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="apple-touch-icon" href="/./soundtouch.png" />
+        <meta name="apple-mobile-web-app-title" content="SoundTouch 2" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <link rel="manifest" href="manifest.json" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="shortcut icon" href="./soundtouch.png" type="image/png" />
+        <title>SoundTouch control</title>
+        <style>
+            html,
+            body {
+                width: 100vw;
+                height: 197vh; /*100*/
+                background-color: #444;
+                margin: 0;
+                padding: 0;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+            body {
+                display: flex;
+                box-sizing: border-box;
+                gap: 3vh;
+                padding: 3vh;
+                flex-wrap: wrap;
+            }
+            .notif {
+                position: fixed;
+                min-height: 1em;
+                padding: 1em;
+                max-width: 90vw;
+                top: -4em;
+                transition: top 1s;
+                left: 50%;
+                transform: translateX(-50%);
+                background-color: #aaa;
+                border-radius: 20px;
+            }
+            .panel {
+                height: 94vh;
+                background-color: #ddd;
+                border-radius: 20px;
+                flex-basis: 60vw;
+                flex-grow: 1;
+                /*transition: flex-basis 1s;*/
+                overflow-x: hidden;
+            }
+            ::-webkit-scrollbar {
+                width: 12px;
+            }
+            ::-webkit-scrollbar-track {
+                border-radius: 10px;
+            }
+            ::-webkit-scrollbar-thumb {
+                border-radius: 10px;
+                background-color: #aaa;
+            }
+            .speakercontainer {
+                width: 100%; /*36vw;*/
+                box-sizing: border-box;
+                align-content: flex-start;
+                padding: 4vh;
+                gap: 4vh;
+                display: flex;
+                flex-wrap: wrap;
+                height: 100%;
+            }
+            .speaker {
+                transition: opacity 0.5s;
+                width: 30vw;
+                height: 30vw;
+                background-color: #aaa;
+                outline: none;
+                border-radius: 12px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                border: none;
+            }
+            .speaker:hover,
+            .speaker:focus,
+            .playbackbtn:hover,
+            .playbackbtn:focus,
+            .topcontrolbtn:hover,
+            .topcontrolbtn:focus {
+                background-color: #999;
+            }
+            .speaker img {
+                height: 20vw;
+                width: 20vw;
+            }
+            .controls {
+                border: 1vw solid #ddd;
+            }
+            .controlscontainer {
+                box-sizing: border-box;
+                padding: 30px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 40px;
+                width: 100%; /*100-25-3*5=60*/
+            }
+            .albumart {
+                width: 40vw;
+                height: 40vw;
+                background-color: #aaa;
+                border: 2px solid #aaa;
+                border-radius: 10px;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: contain;
+                background-image: url(./icons/music.png);
+            }
+            .playback,
+            .topcontrol {
+                display: flex;
+                gap: 0.5rem;
+                width: 100%;
+                justify-content: space-between;
+            }
+            .playbackbtn,
+            .topcontrolbtn {
+                border: none;
+                background-color: #aaa;
+                border-radius: 10px;
+                width: 2.4rem;
+                height: 2.4rem;
+                background-position: center;
+                background-size: 1rem 1rem;
+                background-repeat: no-repeat;
+            }
+            .speaker p,
+            .preset span {
+                color: black; /*safari makes buttontext blue*/
+            }
+            .presets {
+                display: grid;
+                gap: 1rem;
+            }
+            .preset {
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+                grid-column: 1;
+                border: none;
+                outline: none;
+                background: none;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            .preset:hover,
+            .preset:focus {
+                background-color: #aaa;
+            }
+            .preset:nth-child(n + 4) {
+                grid-column: 2;
+            }
+            .preset:nth-child(3n + 2) {
+                grid-row: 2;
+            }
+            .preset:nth-child(3n + 3) {
+                grid-row: 3;
+            }
+            .preset > img {
+                width: 3rem;
+                height: 3rem;
+                border: 2px solid #aaa;
+                border-radius: 5px;
+            }
+            .slider {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 35vw;
+                height: 5px;
+                border-radius: 5px;
+                background: #aaa;
+                outline: none;
+                transition: opacity 0.2s;
+            }
+            .slider#seek {
+                width: 30vw;
+            }
+            .slider::-moz-range-thumb,
+            .slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 15px;
+                height: 15px;
+                border-radius: 50%;
+                background: #666;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="notif"></div>
+        <div class="panel speakers">
+            <div class="speakercontainer">
+                <button class="speaker">
+                    <img
+                        src="./st_30_seriesIII/zwart/cq5dam.web.600.600_.png"
+                        alt=""
+                    />
+                    <p>Laden...</p>
+                </button>
+            </div>
+        </div>
+        <div class="panel controls">
+            <div class="controlscontainer">
+                <div class="topcontrol">
+                    <button
+                        class="topcontrolbtn"
+                        name="POWER"
+                        style="background-image: url(./icons/power-off.svg)"
+                    ></button>
+                    <button
+                        class="topcontrolbtn"
+                        name="AUX_INPUT"
+                        style="background-image: url(./icons/aux.svg)"
+                    ></button>
+                </div>
+                <div class="albumart"></div>
+                <span id="status" style="text-align: center"
+                    >Kies een speaker</span
+                >
+                <div class="playback">
+                    <button
+                        class="playbackbtn"
+                        name="SHUFFLE"
+                        data-index="0"
+                        style="background-image: url(./icons/random.svg)"
+                    ></button>
+                    <button
+                        class="playbackbtn"
+                        name="PREV_TRACK"
+                        style="background-image: url(./icons/backward.svg)"
+                    ></button>
+                    <button
+                        class="playbackbtn"
+                        name="PLAY_PAUSE"
+                        style="background-image: url(./icons/play.svg)"
+                    ></button>
+                    <button
+                        class="playbackbtn"
+                        name="NEXT_TRACK"
+                        style="background-image: url(./icons/forward.svg)"
+                    ></button>
+                    <button
+                        class="playbackbtn"
+                        name="REPEAT"
+                        data-index="0"
+                        style="background-image: url(./icons/sync-alt.svg)"
+                    ></button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem">
+                    <img src="./icons/volume-up.svg" style="width: 1.3rem"
+                    loading="lazy alt="" />
+                    <input
+                        type="range"
+                        oninput="slider(this)"
+                        class="slider"
+                        id="volume"
+                    />
+                </div>
+                <div class="presets">
+                    <button class="preset"><img /><span></span></button>
+                    <button class="preset"><img /><span></span></button>
+                    <button class="preset"><img /><span></span></button>
+                    <button class="preset"><img /><span></span></button>
+                    <button class="preset"><img /><span></span></button>
+                    <button class="preset"><img /><span></span></button>
+                </div>
+                <div
+                    style="display: flex; align-items: center; gap: 1rem"
+                    id="seekcon"
+                >
+                    <span>0:00</span>
+                    <input
+                        type="range"
+                        oninput="slider(this)"
+                        class="slider"
+                        id="seek"
+                    />
+                    <span>0:00</span>
+                </div>
+                <!--[add to zone?]-->
+            </div>
+        </div>
+        <script src="https://unpkg.com/smoothscroll-polyfill@0.4.4/dist/smoothscroll.min.js"></script>
+        <script>
+            window.addEventListener("load", () =>
+                window.scroll({ top: 0, behavior: "smooth" })
+            );
+
+            let voltimeout;
+            function slider(ev) {
+                clearTimeout(voltimeout);
+                voltimeout = setTimeout(
+                    () => socket.volatile.emit(ev.id, ev.value),
+                    200
+                );
+            }
+
+            document
+                .querySelectorAll("div.presets>button.preset")
+                .forEach((val, n) => {
+                    val.onclick = () => {
+                        socket.volatile.emit("key", "PRESET_" + (n + 1));
+                    };
+                });
+            document
+                .querySelectorAll("button.topcontrolbtn, button.playbackbtn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", (ev) => {
+                        let val = ev.target.name;
+                        const edit = {
+                            SHUFFLE: ["SHUFFLE_ON", "SHUFFLE_OFF"],
+                            REPEAT: ["REPEAT_OFF", "REPEAT_ALL", "REPEAT_ONE"],
+                        };
+                        if (edit[val]) {
+                            ev.target.dataset.index =
+                                (parseInt(ev.target.dataset.index) + 1) %
+                                edit[val].length;
+                            val = edit[val][ev.target.dataset.index];
+                        }
+                        socket.volatile.emit("key", val);
+                        ev.target.blur();
+                    });
+                });
+
+            //speaker select code
+            document.addEventListener("keyup", (ev) => {
+                if (ev.keyCode == 27) deselect();
+            });
+            let scrollTO;
+            let scrollpos = 0;
+            window.addEventListener("scroll", (ev) => {
+                clearTimeout(scrollTO);
+                scrollTO = setTimeout(processScroll, 100);
+                function processScroll() {
+                    if (
+                        Math.abs(scrollpos - window.scrollY) >
+                        visualViewport.height / 10
+                    ) {
+                        if (scrollpos < window.scrollY && selected)
+                            window.scroll({
+                                top: window.outerHeight,
+                                behavior: "smooth",
+                            });
+                        else
+                            window.scroll({
+                                top: 0,
+                                behavior: "smooth",
+                            });
+                    } else {
+                        if ((visualViewport.height * 0.97) / 2 > window.scrollY)
+                            window.scroll({
+                                top: 0,
+                                behavior: "smooth",
+                            });
+                        else
+                            window.scroll({
+                                top: window.outerHeight,
+                                behavior: "smooth",
+                            });
+                    }
+                    scrollpos = window.scrollY;
+                }
+            });
+            let selected;
+            function select(elem) {
+                elem.blur();
+                if (elem.isSameNode(selected)) return deselect();
+                selected = elem;
+                document
+                    .querySelectorAll(".speakercontainer>.speaker")
+                    .forEach((el) => {
+                        el.style.border = el.isSameNode(elem)
+                            ? "1px solid black"
+                            : "";
+                    });
+                socket.volatile.emit("select", elem.dataset.id);
+                window.scroll({ top: window.outerHeight, behavior: "smooth" });
+            }
+            function deselect(oncon) {
+                selected = undefined;
+                document
+                    .querySelectorAll(".speakercontainer>.speaker")
+                    .forEach((el) => {
+                        el.style.border = "";
+                    });
+                if (!oncon) socket.volatile.emit("select");
+                clearPlaying();
+            }
+
+            let notiTimeout;
+            function notify(txt, timeout) {
+                clearTimeout(notiTimeout);
+                const notif = document.querySelector("div.notif");
+                notif.style.top = "1em";
+                notif.innerHTML = txt;
+                if (timeout) notiTimeout = setTimeout(hidenoti, timeout);
+            }
+            function hidenoti() {
+                const notif = document.querySelector("div.notif");
+                notif.style.top = "";
+                setTimeout(() => {
+                    notif.textContent = "";
+                }, 1000);
+            }
+
+            function clearPlaying(keepPresets) {
+                document.getElementById("status").innerText =
+                    "Kies een speaker";
+                document.querySelector(
+                    '[name="PLAY_PAUSE"]'
+                ).style.backgroundImage = `url(./icons/play.svg)`;
+                document.querySelector("div.albumart").style.backgroundImage =
+                    "";
+                const seek = document.getElementById("seekcon");
+                seek.style.display = "flex";
+                seek.querySelector("span:nth-child(3)").textContent = "0:00";
+                seek.querySelector("span:nth-child(1)").textContent = "0:00";
+                document.getElementById("seek").value = 0;
+                if (!keepPresets)
+                    document
+                        .querySelectorAll("button.preset")
+                        .forEach(
+                            (val) => (val.innerHTML = "<img/><span></span>")
+                        );
+            }
+            function renderPlaying(obj) {
+                console.log("now_playing", obj);
+                try {
+                    clearInterval(seekinterval);
+                    const status = document.getElementById("status");
+                    clearPlaying(true);
+                    status.innerText = check();
+
+                    function check() {
+                        switch (obj.$.source) {
+                            case "STANDBY":
+                                return "Uitgeschakeld";
+                            case "INVALID_SOURCE":
+                                return "Gereed";
+                            case "AUX":
+                                return "Speelt van AUX";
+                            default:
+                                return "Onbekende status";
+                        }
+                    }
+                    document.querySelector(
+                        '[name="PLAY_PAUSE"]'
+                    ).style.backgroundImage = `url(./icons/${(() => {
+                        if (!obj.playStatus) return "play.svg";
+                        if (obj.playStatus[0] == "PLAY_STATE")
+                            return "pause.svg";
+                        if (obj.playStatus[0] == "BUFFERING_STATE")
+                            return "loader.gif";
+                        return "play.svg";
+                    })()})`;
+                    if (!obj.track) return;
+                    if ("mediaSession" in navigator && obj.art[0]._) {
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                            title: obj.track[0],
+                            artist: obj.artist[0],
+                            album: obj.album[0],
+                            artwork: [
+                                {
+                                    src: obj.art[0]._,
+                                    sizes: "600x600",
+                                    type: "image/png",
+                                },
+                            ],
+                        });
+                        navigator.mediaSession.playbackState =
+                            obj.playStatus[0] == "PLAY_STATE"
+                                ? "playing"
+                                : "paused";
+
+                        navigator.mediaSession.setActionHandler("play", () =>
+                            socket.volatile.emit("key", "PLAY_PAUSE")
+                        );
+                        navigator.mediaSession.setActionHandler("pause", () =>
+                            socket.volatile.emit("key", "PLAY_PAUSE")
+                        );
+                        navigator.mediaSession.setActionHandler(
+                            "previoustrack",
+                            () => socket.volatile.emit("key", "PREV_TRACK")
+                        );
+                        navigator.mediaSession.setActionHandler(
+                            "nexttrack",
+                            () => socket.volatile.emit("key", "NEXT_TRACK")
+                        );
+                    }
+                    status.innerText =
+                        obj.track[0] +
+                        (obj.artist[0].length ? " - " : "") +
+                        obj.artist[0] +
+                        (obj.album[0].length ? " - " : "") +
+                        obj.album[0];
+                    const art = document.querySelector("div.albumart");
+                    if (obj.art[0].$.artImageStatus == "IMAGE_PRESENT")
+                        art.style.backgroundImage = "url(" + obj.art[0]._ + ")";
+                    else art.style.backgroundImage = "";
+                    const seek = document.getElementById("seekcon");
+                    if (
+                        obj.seekSupported &&
+                        obj.seekSupported[0].$.value == "true"
+                    ) {
+                        seek.style.display = "flex";
+                        let cur = parseInt(obj.time[0]._);
+                        const tot = parseInt(obj.time[0].$.total);
+                        document.getElementById("seek").max = tot;
+                        const format = (num) =>
+                            Math.floor(num / 60) +
+                            ":" +
+                            ("" + (num % 60)).padStart(2, "0");
+                        seek.querySelector("span:nth-child(3)").textContent =
+                            format(tot);
+                        const progr = seek.querySelector("span:nth-child(1)");
+                        function update() {
+                            progr.textContent = format(cur);
+                            document.getElementById("seek").value = cur++;
+                        }
+                        update();
+                        if (obj.playStatus && obj.playStatus[0] == "PLAY_STATE")
+                            seekinterval = setInterval(update, 1000);
+                    } else seek.style.display = "none";
+                } catch (err) {
+                    console.log("now_playing err", err);
+                }
+            }
+        </script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            const socket = io("/");
+            socket.on("connect", () => {
+                notify("Verbonden", 2000);
+                if (rendered && selected)
+                    socket.volatile.emit("select", selected?.dataset?.id);
+                //deselect(true); //prevent unregistered selections while offline
+            });
+            socket.on("disconnect", (reason) => {
+                notify("Verbinding verbroken(" + reason + ")");
+                //deselect(); //in case of other speaker on old id
+            });
+
+            socket.on("connect_error", (err) =>
+                notify("Connect-error: " + err.message, 6000)
+            );
+
+            socket.on("err", (err) =>
+                notify(
+                    '<span style="color: red;">Error: ' + err + "</span>",
+                    3000
+                )
+            );
+
+            let rendered = false;
+            socket.on("speakers", (speakers) => {
+                if (rendered) return;
+                rendered = true;
+                const container = document.querySelector(
+                    "div.speakercontainer"
+                );
+                container.innerHTML = "";
+                speakers.forEach((val, index) => {
+                    const elem = document.createElement("button");
+                    elem.className = "speaker";
+                    elem.dataset.id = index;
+                    elem.addEventListener("click", () => select(elem));
+                    elem.innerHTML = `<img src="${val.img}" alt=""/><p>${val.name}</p>`;
+                    container.appendChild(elem);
+                });
+            });
+            socket.on("presets", (obj) => {
+                console.log("presets", obj);
+                try {
+                    const presets = document.querySelector("div.presets");
+                    obj.preset.forEach((preset) => {
+                        const el =
+                            presets.querySelectorAll("button.preset")[
+                                parseInt(preset.$.id) - 1
+                            ];
+                        el.querySelector("span").innerText =
+                            preset.ContentItem[0].itemName[0];
+                        el.querySelector("img").src =
+                            preset.ContentItem[0].containerArt[0];
+                    });
+                } catch (e) {
+                    console.log("preset err", e);
+                }
+            });
+            let seekinterval;
+            socket.on("now_playing", renderPlaying);
+            socket.on("volume", (obj) => {
+                console.log("volume", obj);
+                document.getElementById("volume").value = parseInt(
+                    obj.actualvolume[0]
+                );
+            });
+        </script>
+    </body>
+</html>
